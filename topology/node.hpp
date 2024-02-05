@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <string>
 
-#include "logger.h"
+#include "logger.hpp"
 
 
 namespace errors {
