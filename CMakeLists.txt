@@ -11,6 +11,7 @@ add_executable(
         topology/test_node.hpp
         topology/conway.hpp
         topology/test_conway.hpp
-        topology/logger.h
+        topology/logger.hpp
         topology/test_conway.cpp
-)
+        logger/logger.cpp logger/logger.h
+        logger/test_logger.h)

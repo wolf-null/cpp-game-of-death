@@ -5,14 +5,14 @@
 #include <array>
 
 
-struct Logger {
-    Logger() = default;
-    ~Logger() = default;
+struct TinyLogger {
+    TinyLogger() = default;
+    ~TinyLogger() = default;
     std::ostream& operator <<(auto msg){
         return std::cout << msg;
     }
 };
 
-static Logger logger;
+static TinyLogger logger;
 
 #endif //GAMEOFDEATH_LOGGER_H
