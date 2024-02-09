@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <string>
 
-#include "logger.hpp"
+#include "../logger/standard_logger.hpp"
 
 
 namespace errors {
@@ -44,7 +44,7 @@ public:
     Value() : value_{} {};
     Value(ValueType initial_value) : value_{initial_value} {};
     ~Value() {
-        logger << "~Value()\n";
+        debug << "~Value()\n";
     }
 
     ValueType get() {
@@ -75,7 +75,7 @@ protected:
     Node_ * node_ = nullptr;
 public:
     NodeExecutor() = default;
-    virtual ~NodeExecutor() {logger << "~NodeExecutor()\n";};
+    virtual ~NodeExecutor() {debug << "~NodeExecutor()\n";};
 
     virtual void exec() {
         std::cout << "n";
@@ -181,7 +181,7 @@ public:
 
     virtual ~Node()
     {
-        logger << "~Node()\n";
+        debug << "~Node()\n";
         delete value_;
         delete neighborhood_;
         delete executor_;
