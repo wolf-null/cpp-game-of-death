@@ -1,5 +1,5 @@
-#ifndef CPP_GAME_OF_DEATH_LOGGER_H
-#define CPP_GAME_OF_DEATH_LOGGER_H
+#ifndef CPP_GAME_OF_DEATH_LOGGER_HPP
+#define CPP_GAME_OF_DEATH_LOGGER_HPP
 
 #include <string>
 #include <vector>
@@ -71,4 +71,4 @@ struct LoggerLogLevelHelper {
     LoggerLogLevelHelper& operator << (LogRecord && record);
 };
 
-#endif //CPP_GAME_OF_DEATH_LOGGER_H
+#endif //CPP_GAME_OF_DEATH_LOGGER_HPP

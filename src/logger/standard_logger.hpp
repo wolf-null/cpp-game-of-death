@@ -1,7 +1,7 @@
 #ifndef CPP_GAME_OF_DEATH_STANDARD_LOGGER_HPP
 #define CPP_GAME_OF_DEATH_STANDARD_LOGGER_HPP
 
-#include "logger.h"
+#include "logger.hpp"
 
 
 class StdoutHandler : public LogHandler {

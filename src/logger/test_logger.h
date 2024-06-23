@@ -5,7 +5,7 @@
 #include <cassert>
 #include <iostream>
 
-#include "logger.h"
+#include "logger.hpp"
 
 void test_LogRecord() {
     LogRecord rec_01{"test message", LOG_LEVEL_INFO};

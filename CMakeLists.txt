@@ -3,15 +3,16 @@ project(cpp_game_of_death)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_executable(
-        cpp_game_of_death
-        main.cpp
-        topology/node.hpp
-        topology/test_node.cpp
-        topology/test_node.hpp
-        topology/conway.hpp
-        topology/test_conway.hpp
-        topology/test_conway.cpp
-        logger/logger.cpp logger/logger.h
-        logger/test_logger.h logger/standard_logger.cpp logger/standard_logger.hpp
+add_subdirectory(src/logger)
+add_subdirectory(src/topology)
+
+add_executable(cpp_game_of_death  src/main.cpp)
+
+target_link_libraries(cpp_game_of_death PUBLIC src/logger)
+target_link_libraries(cpp_game_of_death PUBLIC src/topology)
+
+target_include_directories(
+        cpp_game_of_death PUBLIC
+        "${PROJECT_BINARY_DIR}"
+        "${PROJECT_SOURCE_DIR}/src"
 )
