@@ -1,8 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
-project(cpp_game_of_death)
-
-add_library(
-        logger
+add_library(logger STATIC
         logger.hpp
         logger.cpp
         standard_logger.hpp
