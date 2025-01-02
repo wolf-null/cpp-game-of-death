@@ -7,6 +7,8 @@
 #include <optional>
 
 #include "node.hpp"
+#include "logger/standard_logger.hpp"
+
 
 namespace errors {
     struct EXECUTOR_COLLECT_ENVIRONMENT : public std::runtime_error {
@@ -18,10 +20,12 @@ namespace errors {
     };
 }
 
+
 enum class CellState {
     DEAD = 0,
     ALIVE = 1
 };
+
 
 enum class EnvironmentState {
     DEAD = 0,
@@ -29,15 +33,12 @@ enum class EnvironmentState {
     BIRTH = 2
 };
 
+
 using ConwayNode = Node<CellState>;
 using ConwayNodeExecutorBase = NodeExecutor <CellState>;
 
 
 class ConwayNodeExecutor : public ConwayNodeExecutorBase {
-public:
-    ~ConwayNodeExecutor() {
-        std::cout << "~ConwayNodeExecutor()\n";
-    }
 
     auto environment_state() try {
         std::function<CellState(ConwayNode *)> value_extractor = [] (ConwayNode * node) -> CellState {
@@ -68,6 +69,11 @@ public:
             bool is_birth = environment == EnvironmentState::BIRTH;
             return is_birth ? CellState::ALIVE : CellState::DEAD;
         }
+    }
+
+public:
+    ~ConwayNodeExecutor() {
+        debug << "~ConwayNodeExecutor()\n";
     }
 
     virtual void exec() override {

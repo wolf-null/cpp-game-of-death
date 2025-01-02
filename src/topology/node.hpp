@@ -34,7 +34,11 @@ namespace errors {
 
 template <typename ValueType> class Node;
 
-
+/**
+ * Node's value delegate (bridged property).
+ * Implements differentiation between present node's value and its next value.
+ * @tparam ValueType
+ */
 template <typename ValueType>
 class Value {
     ValueType value_;
@@ -47,14 +51,17 @@ public:
         debug << "~Value()\n";
     }
 
+    /// Get current node's value.
     ValueType get() {
         return value_;
     }
 
+    /// Propose next node's value.
     void stage(ValueType staged_value) {
         staged_value_ = std::optional<ValueType>{staged_value};
     }
 
+    /// Set proposed node's value to current node's value.
     void commit() {
         if(staged_value_.has_value()) [[likely]] {
             value_ = *staged_value_;
@@ -62,12 +69,18 @@ public:
         }
     }
 
+    /// Get if there is any next value proposed.
     bool is_staged() {
         return staged_value_.has_value();
     }
 };
 
-
+/**
+ * Node's execution logic delegate (bridged property).
+ * Bridges node's ability to execute it's internal logic (mainly its proposing it's next value depend on current value).
+ * Certain behavior is to be implemented in inheritors, by overriding the `exec()` virtual method.
+ * @tparam ValueType
+ */
 template <typename ValueType>
 class NodeExecutor {
 protected:
@@ -77,25 +90,33 @@ public:
     NodeExecutor() = default;
     virtual ~NodeExecutor() {debug << "~NodeExecutor()\n";};
 
+    /// Overridable node's execution behavior.
     virtual void exec() {
-        std::cout << "n";
+        debug << "exec()";  // TODO: Remove undefined actions
     };
 
+    /// Linked node getter. Allows to access node's properties in `exec()` implementation.
     Node_* node() const {
         if (node_ == nullptr)
             throw errors::EXECUTOR_UNLINKED();
         return node_;
     }
 
+    /// Linked node setter.
     void link_to_node(Node_ * node) {
         if (node == nullptr)
             throw errors::EXECUTOR_NULLPTR_LINKAGE();
         node_ = node;
-        node_->executor_ = this;
+        node_->set_executor(this);
     }
 };
 
-
+/**
+ * Node's list neighbors delegate (bridged property).
+ * Implements node's ability to have neighbors.
+ * Under the hood is it a container of references to other nodes of type TNode.
+ * @tparam TNode a class specified from Node<TValue> template
+ */
 template <class TNode>
 class Neighborhood {
 public:
@@ -106,12 +127,14 @@ private:
 
 public:
     Neighborhood() = default;
-    ~Neighborhood() { std::cout <<"~Neighborhood()\n"; }
+    ~Neighborhood() { debug <<"~Neighborhood()"; }
 
+    /// Add a @param node to the neighborhood.
     void subscribe_to(TNode * node) {
         neighbors_.push_back(node);
     }
 
+    /// Remove @param node for the neighborhood.
     void unsubscribe_from(TNode * node) {
         auto found = std::find(neighbors_.begin(), neighbors_.end(), node);
         if(found == neighbors_.end())
@@ -119,18 +142,26 @@ public:
         neighbors_.erase(found);
     }
 
+    /// Number of neighbors.
     const std::size_t size() const {
         return neighbors_.size();
     }
 
+    /// Forward iterator for the neighbors.
     auto begin() {
         return neighbors_.begin();
     }
 
+    /// Tail iterator for the neighbors.
     auto end() {
         return neighbors_.end();
     }
 
+    /**
+     * Apply predicate to each neighbor consequently.
+     * @param predicate a method applied to a node with return type @tparam MappedT
+     * @return a vector of returns from applying @param predicate to each neighbor.
+     */
     template <typename MappedT>
     auto map(std::function<MappedT(TNode*)> &predicate) {
         std::vector<MappedT> result;
@@ -139,7 +170,13 @@ public:
     }
 };
 
-
+/**
+ * A composite object, describing a Node.
+ * @see Value delegating storage of node's value.
+ * @see Neighborhood delegating node's neighbors.
+ * @see Executor delegating node's behavior.
+ * @tparam ValueType
+ */
 template <typename ValueType>
 struct Node {
     using TNode = Node<ValueType>;
@@ -156,29 +193,43 @@ private:
     TNeighborhood * neighborhood_;
     TExecutor * executor_;
 
+    /// Value delegate setter. To be used during composition (construction) only.
+    void set_value(TValue * value) {value_ = value;}
+
+    /// Neighborhood setter. To be used during composition (construction) only.
+    void set_neighborhood(TNeighborhood * neighborhood) {neighborhood_ = neighborhood;}
+
+    /// Executor setter. To be used during composition (construction) only.
+    void set_executor(TExecutor * executor) {executor_ = executor;}
+
 public:
-    TValue * value() {
-        return value_;
-    }
+    /// Value delegate getter.
+    TValue * value() {return value_;}
+
+    /// Neighborhood delegate getter.
     TNeighborhood * neighborhood() {return neighborhood_;}
+
+    /// Executor delegate getter.
     TExecutor * executor() {
         return executor_;
     }
 
-    Node() :
-        value_{new TValue },
-        neighborhood_{new TNeighborhood}
-    {
+    Node() {
         (new TExecutor)->link_to_node(this);
+        set_neighborhood(new TNeighborhood);
+        set_value(new TValue);
     };
 
     Node(
         ValueType initial_value,
         TExecutor * node_executor = nullptr
-    ) : value_{new TValue {initial_value}}, neighborhood_{new TNeighborhood} {
+    ) {
         (node_executor ? node_executor : new TExecutor)->link_to_node(this);
+        set_neighborhood(new TNeighborhood);
+        set_value(new TValue(initial_value));
     }
 
+    /// Node destruction also destroys its delegates.
     virtual ~Node()
     {
         debug << "~Node()\n";
