@@ -1,8 +1,4 @@
-#include <iostream>
-
-#include "topology/node.hpp"
 #include "topology/tests/test_node.hpp"
-#include "topology/conway.hpp"
 #include "topology/tests/test_conway.hpp"
 #include "logger/tests/test_logger.h"
 

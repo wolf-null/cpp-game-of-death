@@ -1,7 +1,5 @@
 #include "logger.hpp"
 
-#include <algorithm>
-
 // ---------------------------------------------------- LogHandler -----------------------------------------------------
 
 void LogHandler::set_level(int level) {
