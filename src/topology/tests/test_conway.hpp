@@ -5,8 +5,8 @@
 #include <cassert>
 #include <tuple>
 
-#include "node.hpp"
-#include "conway.hpp"
+#include "topology/node.hpp"
+#include "topology/conway.hpp"
 
 template <int NUM_NEIGHBORS>
 struct TestConwayLogic {

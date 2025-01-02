@@ -3,5 +3,5 @@ add_library(logger STATIC
         logger.cpp
         standard_logger.hpp
         standard_logger.cpp
-        test_logger.h
+        tests/test_logger.h
 )

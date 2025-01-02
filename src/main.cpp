@@ -1,10 +1,10 @@
 #include <iostream>
 
 #include "topology/node.hpp"
-#include "topology/test_node.hpp"
+#include "topology/tests/test_node.hpp"
 #include "topology/conway.hpp"
-#include "topology/test_conway.hpp"
-#include "logger/test_logger.h"
+#include "topology/tests/test_conway.hpp"
+#include "logger/tests/test_logger.h"
 
 int main() {
     test_node();
