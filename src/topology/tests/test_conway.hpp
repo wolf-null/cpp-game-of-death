@@ -6,7 +6,7 @@
 #include <tuple>
 
 #include "topology/node.hpp"
-#include "topology/conway.hpp"
+#include "topology/conway_node.hpp"
 
 template <int NUM_NEIGHBORS>
 struct TestConwayLogic {

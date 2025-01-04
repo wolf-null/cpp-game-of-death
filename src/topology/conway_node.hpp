@@ -5,6 +5,7 @@
 #include <numeric>
 #include <algorithm>
 #include <optional>
+#include <memory>
 
 #include "node.hpp"
 #include "logger/standard_logger.hpp"
@@ -84,5 +85,8 @@ public:
     }
 };
 
+
+/// Conway node factory method
+std::unique_ptr<ConwayNode> make_conway_node(CellState state = CellState::DEAD);
 
 #endif //GAMEOFDEATH_CONWAY_HPP

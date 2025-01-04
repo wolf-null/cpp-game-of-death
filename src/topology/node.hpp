@@ -45,6 +45,8 @@ class Value {
     std::optional<ValueType> staged_value_;
 
 public:
+    using Type = ValueType;
+
     Value() : value_{} {};
     Value(ValueType initial_value) : value_{initial_value} {};
     ~Value() {
@@ -64,8 +66,10 @@ public:
     /// Set proposed node's value to current node's value.
     void commit() {
         if(staged_value_.has_value()) [[likely]] {
-            value_ = *staged_value_;
+            value_ = staged_value_.value();
             staged_value_.reset();
+            if constexpr (std::is_same<decltype(value_), int>::value)
+                debug << std::to_string(value_);
         }
     }
 
@@ -91,9 +95,7 @@ public:
     virtual ~NodeExecutor() {debug << "~NodeExecutor()\n";};
 
     /// Overridable node's execution behavior.
-    virtual void exec() {
-        debug << "exec()";  // TODO: Remove undefined actions
-    };
+    virtual void exec() {};
 
     /// Linked node getter. Allows to access node's properties in `exec()` implementation.
     Node_* node() const {
@@ -127,7 +129,7 @@ private:
 
 public:
     Neighborhood() = default;
-    ~Neighborhood() { debug <<"~Neighborhood()"; }
+    ~Neighborhood() { debug <<"~Neighborhood()\n"; }
 
     /// Add a @param node to the neighborhood.
     void subscribe_to(TNode * node) {
@@ -194,7 +196,9 @@ private:
     TExecutor * executor_;
 
     /// Value delegate setter. To be used during composition (construction) only.
-    void set_value(TValue * value) {value_ = value;}
+    void set_value(TValue * value) {
+        value_ = value;
+    }
 
     /// Neighborhood setter. To be used during composition (construction) only.
     void set_neighborhood(TNeighborhood * neighborhood) {neighborhood_ = neighborhood;}

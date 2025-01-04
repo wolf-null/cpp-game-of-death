@@ -2,7 +2,7 @@
 #define GAMEOFDEATH_TEST_NODE_HPP
 
 #include "topology/node.hpp"
-#include "topology/conway.hpp"
+#include "topology/conway_node.hpp"
 #include <stdexcept>
 #include <cassert>
 
