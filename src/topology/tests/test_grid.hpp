@@ -12,7 +12,7 @@ struct test_grid {
     class NodeExecutorMock : public grid_assets::executor_base_type<TNode> {
         void exec() override {
             auto neighbor_count = node()->neighborhood()->size();
-            std::cout << " this node has " << neighbor_count << " neighbors\n";
+            debug << " this node has " + std::to_string(neighbor_count) + " neighbors\n";
             node()->value()->stage(int(neighbor_count));
             node()->value()->commit();
         }
@@ -43,12 +43,11 @@ struct test_grid {
                     expected_neighbor_count = 4;
 
                 // Exec node and find real number of neighbors.
-                std::cout << "[" << i << ", " << j << "]";
-                std::cout << " (expect " << expected_neighbor_count << " neighbors)";
+                debug << ("[" + std::to_string(i) + ", " + std::to_string(j) + "]");
+                debug << " (expect " + std::to_string(expected_neighbor_count) + " neighbors)";
                 TNode * node = grid[ij_2_idx(i, j, width_)];
                 node->executor()->exec();
 
-                std::cout << node->value() << " vs " << node->executor()->node()->value() << "\n";
                 ValueType neighbor_count = node->value()->get();
                 assert(neighbor_count == expected_neighbor_count);
             }

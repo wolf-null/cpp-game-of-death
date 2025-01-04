@@ -16,7 +16,7 @@ public:
 
 Logger* build_standard_logger(int log_level = LOG_LEVEL_DEBUG);
 
-constexpr int DEFAULT_LOG_LEVEL = LOG_LEVEL_DEBUG;
+constexpr int DEFAULT_LOG_LEVEL = LOG_LEVEL_ERROR;
 static Logger * default_logger = build_standard_logger(DEFAULT_LOG_LEVEL);
 
 static auto debug = default_logger->log(LOG_LEVEL_DEBUG);
