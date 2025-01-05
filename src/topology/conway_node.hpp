@@ -87,6 +87,9 @@ public:
 
 
 /// Conway node factory method
-std::unique_ptr<ConwayNode> make_conway_node(CellState state = CellState::DEAD);
+ConwayNode* make_conway_node(CellState state = CellState::DEAD) {
+    return new ConwayNode(state, new ConwayNodeExecutor);
+}
+
 
 #endif //GAMEOFDEATH_CONWAY_HPP

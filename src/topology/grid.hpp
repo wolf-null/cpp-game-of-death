@@ -76,11 +76,11 @@ namespace grid_assets {
     }
 }
 
-template <typename TNode, typename TExecutor>
+template <typename TNode, typename TExecutor = grid_assets::executor_base_type <TNode>>
 Grid<TNode> make_grid(
     Index width,
     Index height,
-    grid_assets::executor_base_type <TNode> * executor = nullptr,
+    TExecutor * executor = nullptr, // TODO: executor factory
     GridTopology topology = GridTopology::RAW
 ) {
     using namespace grid_assets;

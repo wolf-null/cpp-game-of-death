@@ -105,6 +105,11 @@ struct TestConwayLogic {
 };
 
 
-void test_conway();
+void test_conway() {
+    TestConwayLogic<0>().test();
+    TestConwayLogic<1>().test();
+    TestConwayLogic<8>().test();
+}
+
 
 #endif //GAMEOFDEATH_TEST_CONWAY_HPP
