@@ -10,13 +10,15 @@
 
 template <int NUM_NEIGHBORS>
 struct TestConwayLogic {
-    using Node_ = ConwayNode;
+    using Node_ = conway::ConwayNode;
 
     Node_ * core_node;
     std::array<Node_*, NUM_NEIGHBORS> env_nodes;
 
     TestConwayLogic() {
-        core_node = new ConwayNode {CellState::DEAD, new ConwayNodeExecutor};
+        using namespace conway;
+
+        core_node = new conway::ConwayNode {CellState::DEAD, new ConwayNodeExecutor};
 
         for(int idx{0}; idx != NUM_NEIGHBORS; ++ idx)
             env_nodes[idx] = new ConwayNode {CellState::DEAD, new ConwayNodeExecutor};
@@ -27,6 +29,8 @@ struct TestConwayLogic {
     }
 
     auto set_state_by_seed(int seed, Node_& node, bool commit_now = true) {
+        using namespace conway;
+
         bool state_code = seed & 0x1;
         auto state = state_code ? CellState::ALIVE : CellState::DEAD;
         node.value()->stage(state);
@@ -35,7 +39,9 @@ struct TestConwayLogic {
         return state_code;
     }
 
-    std::tuple <CellState, EnvironmentState> seed_states(int seed) {
+    std::tuple <conway::CellState, conway::EnvironmentState> seed_states(int seed) {
+        using namespace conway;
+
         auto cell_value = set_state_by_seed(seed, *core_node);
         auto env_value_sum {0};
         for (auto& env_node : env_nodes) {
@@ -59,7 +65,9 @@ struct TestConwayLogic {
         return std::make_tuple(cell_state, env_state);
     }
 
-    CellState predict_next_state_value(std::tuple <CellState, EnvironmentState> input) {
+    conway::CellState predict_next_state_value(std::tuple <conway::CellState, conway::EnvironmentState> input) {
+        using namespace conway;
+
         switch (std::get<0>(input)) {
             case CellState::DEAD:
                 switch (std::get<1>(input)) {
@@ -81,7 +89,9 @@ struct TestConwayLogic {
         }
     }
 
-    std::tuple <CellState, EnvironmentState, CellState> bake_test_case(int seed) {
+    std::tuple <conway::CellState, conway::EnvironmentState, conway::CellState> bake_test_case(int seed) {
+        using namespace conway;
+
         auto input = seed_states(seed);
         auto output = predict_next_state_value(input);
         return std::make_tuple(std::get<0>(input), std::get<1>(input), output);

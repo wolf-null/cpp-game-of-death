@@ -10,8 +10,12 @@ int main() {
     test_LogHandler();
     test_Logger(false);
     test_LoggerLogLevelHelper(false);
-    test_grid(3,3).perform_tests();
-    test_grid(5,3).perform_tests();
-    test_grid(3,5, GridTopology::TORUS).perform_tests();
+
+    {
+        using namespace topology::grid;
+        test_grid(3, 3).perform_tests();
+        test_grid(5, 3).perform_tests();
+        test_grid(3, 5, GridTopology::TORUS).perform_tests();
+    }
     return 0;
 }

@@ -3,7 +3,7 @@ add_library(topology STATIC
         conway_node.hpp
         tests/test_node.hpp
         tests/test_conway.hpp
-        grid.hpp tests/test_grid.hpp)
+        grid.hpp tests/test_grid.hpp node_array.hpp)
 
 # A nasty way for including one static linked library to another.
 target_include_directories(topology PUBLIC ${PROJECT_SOURCE_DIR}/src)

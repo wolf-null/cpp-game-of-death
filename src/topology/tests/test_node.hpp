@@ -8,6 +8,8 @@
 
 
 void test_node() {
+    using namespace topology;
+
     using ValueType = int;
     using Node_ = Node <ValueType>;
     Node_ node;

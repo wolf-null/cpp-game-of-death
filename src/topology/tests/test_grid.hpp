@@ -6,10 +6,13 @@
 
 #include "../grid.hpp"
 
+using namespace topology;
+using namespace topology::grid;
+
 struct test_grid {
     using ValueType = int;
     using TNode = Node<ValueType>;
-    class NodeExecutorMock : public grid_assets::executor_base_type<TNode> {
+    class NodeExecutorMock : public topology::grid::executor_base_type<TNode> {
         void exec() override {
             auto neighbor_count = node()->neighborhood()->size();
             debug << " this node has " + std::to_string(neighbor_count) + " neighbors\n";
@@ -28,7 +31,7 @@ struct test_grid {
         topology_{topology} {};
 
     void perform_tests() {
-        using namespace grid_assets;
+        using namespace topology::grid::assets;
         Grid<TNode> grid = make_grid<TNode, NodeExecutorMock> (width_, height_, nullptr, topology_);
         for (Index i = 0; i != height_; ++ i)
             for (Index j = 0; j != width_; ++ j) {
@@ -57,6 +60,7 @@ struct test_grid {
                 ValueType neighbor_count = node->value()->get();
                 assert(neighbor_count == expected_neighbor_count);
             }
+
     }
 };
 
