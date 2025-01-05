@@ -20,12 +20,16 @@ struct test_grid {
 
     Index width_;
     Index height_;
+    GridTopology topology_;
 
-    test_grid(Index width, Index height) : width_{width}, height_{height} {};
+    test_grid(Index width, Index height, GridTopology topology = GridTopology::RAW) :
+        width_{width},
+        height_{height},
+        topology_{topology} {};
 
     void perform_tests() {
         using namespace grid_assets;
-        Grid<TNode> grid = make_grid<TNode, NodeExecutorMock> (width_, height_);
+        Grid<TNode> grid = make_grid<TNode, NodeExecutorMock> (width_, height_, nullptr, topology_);
         for (Index i = 0; i != height_; ++ i)
             for (Index j = 0; j != width_; ++ j) {
                 // Calculate expected number of neighbors
@@ -35,7 +39,9 @@ struct test_grid {
                 bool is_corner = is_h_border && is_v_border;
 
                 ValueType expected_neighbor_count;
-                if (is_corner)
+                if (topology_ == GridTopology::TORUS)
+                    expected_neighbor_count = 4;
+                else if (is_corner)
                     expected_neighbor_count = 2;
                 else if (is_border)
                     expected_neighbor_count = 3;

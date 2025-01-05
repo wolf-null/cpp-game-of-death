@@ -10,8 +10,6 @@
 
 using Index = std::size_t;
 
-//template <typename TNode>
-//using Grid = std::vector <TNode*>;
 
 template <typename TNode>
 struct Grid : public std::vector <TNode*> {
