@@ -34,8 +34,21 @@ namespace errors {
 
 namespace topology {
 
-    template<typename ValueType>
-    class Node;
+    template<typename ValueType> class NodeExecutor;
+    template<typename ValueType, typename TCustomExecutor = NodeExecutor<ValueType> > class Node;
+
+    /// Extract value type from specialized Node class
+    template<typename TNode>
+    using node_value_type = typename TNode::TValue::Type;
+
+    /**
+     * Extracts NodeExecutor type for given TNode param.
+     * Use this as the base class for custom node executors.
+     * @see NodeExecutor
+     */
+    template<typename TNode>
+    using executor_base_type = NodeExecutor<node_value_type<TNode>>;
+
 
     /**
      * Node's value delegate (bridged property).
@@ -87,7 +100,7 @@ namespace topology {
     /**
      * Node's execution logic delegate (bridged property).
      * Bridges node's ability to execute it's internal logic (mainly its proposing it's next value depend on current value).
-     * Certain behavior is to be implemented in inheritors, by overriding the `exec()` virtual method.
+     * Certain behavior is to be implemented in inheritors, by overriding the exec() virtual method.
      * @tparam ValueType
      */
     template<typename ValueType>
@@ -152,7 +165,7 @@ namespace topology {
         }
 
         /// Number of neighbors.
-        const std::size_t size() const {
+        std::size_t size() const {
             return neighbors_.size();
         }
 
@@ -168,8 +181,8 @@ namespace topology {
 
         /**
          * Apply predicate to each neighbor consequently.
-         * @param predicate a method applied to a node with return type @tparam MappedT
-         * @return a vector of returns from applying @param predicate to each neighbor.
+         * @param predicate a method applied to a node with return type MappedT
+         * @return a vector of returns from applying `predicate` to each neighbor.
          */
         template<typename MappedT>
         auto map(std::function<MappedT(TNode *)> &predicate) {
@@ -185,13 +198,14 @@ namespace topology {
      * @see Neighborhood delegating node's neighbors.
      * @see Executor delegating node's behavior.
      * @tparam ValueType
+     * @tparam TCustomExecutor optional. An executor class overriding the default `NodeExecutor<ValueType>`
      */
-    template<typename ValueType>
+    template<typename ValueType, typename TCustomExecutor>
     struct Node {
         using TNode = Node<ValueType>;
         using TValue = Value<ValueType>;
         using TNeighborhood = Neighborhood<TNode>;
-        using TExecutor = NodeExecutor<ValueType>;
+        using TExecutor = TCustomExecutor;
 
         friend TValue;
         friend TExecutor;

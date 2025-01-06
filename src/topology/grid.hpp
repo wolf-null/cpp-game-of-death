@@ -20,9 +20,11 @@ namespace topology::grid {
     /// Alias for node indices and coordinates type
     using Index = topology::Index;
 
+
     /// Grid object is the same as @see NodeArray
     template<typename TNode>
     using Grid  = topology::NodeArray<TNode>;
+
 
     /// Topology of the whole grid.
     enum class GridTopology {
@@ -30,17 +32,6 @@ namespace topology::grid {
         TORUS ///< Grid topology is folded so the opposite borders are glued, so the space enclosed.
     };
 
-    /// Extract value type from specialized Node class
-    template<typename TNode>
-    using node_value_type = typename TNode::TValue::Type;
-
-    /**
-     * Extracts NodeExecutor type for given @tparam TNode.
-     * Use this as the base class for custom node executors.
-     * @see NodeExecutor
-     */
-    template<typename TNode>
-    using executor_base_type = NodeExecutor<node_value_type<TNode>>;
 
     /**
      * Definition of the factory method of node's executors.
@@ -89,7 +80,7 @@ namespace topology::grid {
         }
 
         /**
-         * Attempts to locate node in the Grid at (@tparam i, @tparam j) in selected topology.
+         * Attempts to locate node in the Grid at (i, j) in selected topology.
          * Implements (i, j) coordinates mapping into the real index (node number).
          * And by this, partially implements the topological structure.
          * @return pointer to Node. If there is no node at (i, j) returns nullptr
@@ -119,13 +110,14 @@ namespace topology::grid {
         }
     }
 
+
     /**
      * Builds Taxicab Metric grid of nodes.
      * @tparam TNode
      * @tparam TExecutor custom executor type for overriding the behavior. Must be inherited from executor_base_type<TNode>
      * @param width grid actual width
      * @param height grid actual height
-     * @param executor_factory if NULL uses @tparam TExecutor() for each node, otherwise use @see t_executor_factory
+     * @param executor_factory if nullptr uses new TExecutor() for each node, otherwise uses executor_factory to build node
      * @param topology the way border nodes are connected
      * @return built Grid<TNode> object
      */

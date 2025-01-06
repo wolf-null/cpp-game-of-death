@@ -38,10 +38,8 @@ namespace conway {
 
 
     using ConwayNode = Node<CellState>;
-    using ConwayNodeExecutorBase = NodeExecutor<CellState>;
 
-
-    class ConwayNodeExecutor : public ConwayNodeExecutorBase {
+    class ConwayNodeExecutor : public executor_base_type<ConwayNode> {
 
         auto environment_state() try {
             std::function<CellState(ConwayNode *)> value_extractor = [](ConwayNode *node) -> CellState {
@@ -67,7 +65,7 @@ namespace conway {
             throw errors::EXECUTOR_GET_NODE_STATE();
         }
 
-        CellState eval_new_state(CellState current, EnvironmentState environment) {
+        static CellState eval_new_state(CellState current, EnvironmentState environment) {
             if (current == CellState::ALIVE) {
                 bool is_keep_alive = environment == EnvironmentState::BIRTH or environment == EnvironmentState::SUPPORT;
                 return is_keep_alive ? CellState::ALIVE : CellState::DEAD;
@@ -78,7 +76,7 @@ namespace conway {
         }
 
     public:
-        ~ConwayNodeExecutor() {
+        ~ConwayNodeExecutor() override {
             debug << "~ConwayNodeExecutor()\n";
         }
 

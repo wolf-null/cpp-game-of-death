@@ -12,7 +12,7 @@ using namespace topology::grid;
 struct test_grid {
     using ValueType = int;
     using TNode = Node<ValueType>;
-    class NodeExecutorMock : public topology::grid::executor_base_type<TNode> {
+    class NodeExecutorMock : public topology::executor_base_type<TNode> {
         void exec() override {
             auto neighbor_count = node()->neighborhood()->size();
             debug << " this node has " + std::to_string(neighbor_count) + " neighbors\n";
