@@ -21,8 +21,7 @@ namespace errors {
     };
 }
 
-namespace conway {
-    using namespace topology;
+namespace topology::conway {
 
     enum class CellState {
         DEAD = 0,

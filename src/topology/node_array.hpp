@@ -16,16 +16,35 @@ namespace topology {
     class NodeArray {
         std::vector<TNode *> items_;
     public:
-        TNode* & operator[](Index idx) {
-            return items_[idx];
+        explicit NodeArray(Index size) {
+            items_.resize(size);
         }
 
-        void resize(Index new_size) {
-            items_.resize(new_size);
+        TNode* replace_node(TNode * node, Index idx) {
+            std::swap (items_[idx], node);
+            return node;
+        }
+
+        TNode* operator[](Index idx) {
+            return items_.at(idx);
+        }
+
+        Index size() const {
+            return items_.size();
         }
 
         ~NodeArray() {
             for (auto *node: items_) delete node;
+        }
+
+        void apply(std::function<void(TNode*)> proc) {
+            for (auto *node: items_) proc(node);
+        }
+
+        void apply(std::function<void(int, TNode*)> proc) {
+            for (auto idx = 0, it = items_.begin(); it != items_.end(); ++it, ++ idx) {
+                proc(idx, *it);
+            }
         }
     };
 }

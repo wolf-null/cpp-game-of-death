@@ -246,8 +246,8 @@ namespace topology {
         };
 
         Node(
-                ValueType initial_value,
-                TExecutor *node_executor = nullptr
+            ValueType initial_value,
+            TExecutor *node_executor = nullptr
         ) {
             (node_executor ? node_executor : new TExecutor)->link_to_node(this);
             set_neighborhood(new TNeighborhood);

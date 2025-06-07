@@ -21,9 +21,9 @@ namespace topology::grid {
     using Index = topology::Index;
 
 
-    /// Grid object is the same as @see NodeArray
+    /// NodeArray object is the same as @see NodeArray
     template<typename TNode>
-    using Grid  = topology::NodeArray<TNode>;
+    using NodeArray  = topology::NodeArray<TNode>;
 
 
     /// Topology of the whole grid.
@@ -43,17 +43,48 @@ namespace topology::grid {
      * @see make_grid
      */
     template<typename TNode>
-    using t_executor_factory = executor_base_type<TNode>*(Index, Index, Index, Index);
+    class ExecutorFactory {
+        Index width_;
+        Index height_;
+    public:
+        explicit ExecutorFactory() = delete;
+        explicit ExecutorFactory(Index width, Index height) : width_{width}, height_{height} {};
 
+        Index width () const {return width_;}
+        Index height () const {return height_;}
+
+        using ExecutorBaseType = executor_base_type<TNode>;
+        virtual ExecutorBaseType* make_executor_at (Index i, Index j) = 0;
+    };
 
     /**
      * Assets namespace is not meant to be used from outside
      */
     namespace assets {
+        /// Arguments must have form (i, j, width) -> idx, all of type `topology::Index`
+        class Indexer {
+            Index width_;
+            Index height_;
+        public:
+            Index width() const {return width_;}
+            Index height() const {return height_;}
+            explicit Indexer() = delete;
+            explicit Indexer(Index width, Index height) : width_{width}, height_{height} {};
+
+            virtual Index operator() (Index i, Index j) const = 0;
+
+            Index of(Index i, Index j) const {return operator()(i, j);}
+        };
+
         /// Taxicab metric (i, j) -> linear index (node number)
-        Index ij_2_idx(Index i, Index j, Index width) {
-            return j + i * width;
-        }
+        class IJIndexer : public Indexer {
+        public:
+            explicit IJIndexer(Index width, Index height) : Indexer{width, height} {};
+
+            Index operator() (Index i, Index j) const override {
+                return j + i * width();
+            }
+        };
 
         /// If @param neighbor is not NULL adds it to the neighborhood of @param node
         template<typename TNode>
@@ -80,7 +111,7 @@ namespace topology::grid {
         }
 
         /**
-         * Attempts to locate node in the Grid at (i, j) in selected topology.
+         * Attempts to locate node in the NodeArray at (i, j) in selected topology.
          * Implements (i, j) coordinates mapping into the real index (node number).
          * And by this, partially implements the topological structure.
          * @return pointer to Node. If there is no node at (i, j) returns nullptr
@@ -88,28 +119,35 @@ namespace topology::grid {
          */
         template<typename TNode>
         [[nodiscard]] TNode *get_node_if_exists(
-                Grid<TNode> &grid,
+                NodeArray<TNode> &grid,
                 Index i,
                 Index j,
-                Index width,
-                Index height,
+                Indexer & indexer,
                 GridTopology topology = GridTopology::RAW
         ) {
             switch (topology) {
                 case GridTopology::RAW:
-                    if (i < 0 || i >= height || j < 0 || j >= width)
+                    if (i < 0 || i >= indexer.height() || j < 0 || j >= indexer.width())
                         return nullptr;
-                    return grid[ij_2_idx(i, j, width)];
+                    return grid[indexer(i, j)];
                 case GridTopology::TORUS:
-                    j = j % width + (j < 0 && j % width != 0 ? width : 0);
-                    i = i % height + (i < 0 && i % height != 0 ? height : 0);
-                    return grid[ij_2_idx(i, j, width)];
+                    j = j % indexer.width() + (j < 0 && j % indexer.width() != 0 ? indexer.width() : 0);
+                    i = i % indexer.height() + (i < 0 && i % indexer.height() != 0 ? indexer.height() : 0);
+                    return grid[indexer(i, j)];
                 default:
                     throw errors::TOPOLOGY_NOT_IMPLEMENTED();
             }
         }
     }
 
+    template<typename TNode, typename TExecutor = executor_base_type<TNode>>
+    class NewExecutor : public ExecutorFactory<TNode> {
+    public:
+        explicit NewExecutor(Index width, Index height) : ExecutorFactory<TNode>(width, height) {};
+        TExecutor* make_executor_at (Index i, Index j) override {
+            return new TExecutor();
+        }
+    };
 
     /**
      * Builds Taxicab Metric grid of nodes.
@@ -119,32 +157,38 @@ namespace topology::grid {
      * @param height grid actual height
      * @param executor_factory if nullptr uses new TExecutor() for each node, otherwise uses executor_factory to build node
      * @param topology the way border nodes are connected
-     * @return built Grid<TNode> object
+     * @return built NodeArray<TNode> object
      */
     template<typename TNode, typename TExecutor = executor_base_type<TNode>>
-    Grid<TNode> make_grid(
+    NodeArray<TNode> make_grid(
             Index width,
             Index height,
-            t_executor_factory<TNode> * executor_factory = nullptr,  // TODO: make tests
+            ExecutorFactory<TNode> * executor_factory = nullptr,  // TODO: cover with tests
             GridTopology topology = GridTopology::RAW
     ) {
         using namespace topology::grid::assets;
+        auto ij_2_idx = IJIndexer(width, height);
+
+        if (!executor_factory)
+            // TODO: Fix memory leak
+            executor_factory = new NewExecutor<TNode, TExecutor>(width, height);
 
         Index size = width * height;
-        Grid<TNode> grid;
-        grid.resize(size);
+        NodeArray<TNode> node_array(size);
         for (Index i = 0; i != height; ++ i) {
             for (Index j = 0; j != width; ++ j) {
-                Index idx = ij_2_idx(i, j, width);
+                Index idx = ij_2_idx(i, j);
 
                 {
-                    grid[idx] = make_node<TNode>(
-                        executor_factory ? executor_factory(i, j, height, width) : new TExecutor{}
+                    // Localize the scope to make sure destructor of new-made Node won't be invoked.
+                    node_array.replace_node(
+                        make_node<TNode>(executor_factory->make_executor_at(i, j)),
+                        idx
                     );
                 }
 
                 // Check is there issues with TNode scope and cross-pointers.
-                TNode *node = grid[idx];
+                TNode *node = node_array[idx];
                 assert(node == node->executor()->node());
                 assert(node->value() == node->executor()->node()->value());
             }
@@ -153,27 +197,27 @@ namespace topology::grid {
         for (Index i = 0; i != height; ++i) {
             for (Index j = 0; j != width; ++j) {
                 // Secondary cross-pointer checks
-                TNode *node = grid[ij_2_idx(i, j, width)];
+                TNode *node = node_array[ij_2_idx(i, j)];
                 assert(node == node->executor()->node());
                 assert(node->value() == node->executor()->node()->value());
 
                 // Connect neighbor nodes to this (i, j) node
-                try_subscribe(node, get_node_if_exists(grid, i - 1, j, width, height, topology));
-                try_subscribe(node, get_node_if_exists(grid, i + 1, j, width, height, topology));
-                try_subscribe(node, get_node_if_exists(grid, i, j - 1, width, height, topology));
-                try_subscribe(node, get_node_if_exists(grid, i, j + 1, width, height, topology));
+                try_subscribe(node, get_node_if_exists(node_array, i - 1, j, ij_2_idx, topology));
+                try_subscribe(node, get_node_if_exists(node_array, i + 1, j, ij_2_idx, topology));
+                try_subscribe(node, get_node_if_exists(node_array, i, j - 1, ij_2_idx, topology));
+                try_subscribe(node, get_node_if_exists(node_array, i, j + 1, ij_2_idx, topology));
             }
         }
 
-        return grid;
+        return node_array;
     }
 
-    /// Alias for building Grid for given @tparam ValueType
+    /// Alias for building NodeArray for given @tparam ValueType
     template<typename ValueType>
-    Grid<Node<ValueType>> make_grid_v(
+    NodeArray<Node<ValueType>> make_grid_v(
             Index width,
             Index height,
-            t_executor_factory<Node<ValueType>> * executor_factory = nullptr,
+            ExecutorFactory<Node<ValueType>> * executor_factory = nullptr,
             GridTopology topology = GridTopology::RAW
     ) {
         return make_grid<Node<ValueType>>(width, height, executor_factory, topology);
